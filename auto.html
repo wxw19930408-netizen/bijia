@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <meta name="description" content="用本机 Chrome 自动抓取淘宝、京东、拼多多的商品搜索结果与价格，输入商品名称即可比较三家价格。">
+  <title>比价台 · 自动抓价</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%231c1b18'/%3E%3Ctext x='32' y='45' font-size='38' text-anchor='middle' fill='%23f4f0e7' font-family='serif'%3E比%3C/text%3E%3C/svg%3E">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="auto.css">
+</head>
+<body class="auto-page">
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="brand" href="/" aria-label="比价台自动抓价首页">
+        <span class="brand-mark" aria-hidden="true">比</span>
+        <span class="brand-copy">
+          <span class="brand-name">比价台 <em class="auto-wordmark">AUTO</em></span>
+          <span class="brand-en">LOCAL CRAWLER</span>
+        </span>
+      </a>
+      <div class="auto-status">
+        <span class="auto-status-dot" id="browserDot" aria-hidden="true"></span>
+        <span id="browserStatus">正在检查本地服务</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="auto-main">
+    <section class="auto-hero">
+      <div class="auto-hero-copy">
+        <p class="eyebrow"><span>AUTO 01</span>本地 Chrome · 三家同查</p>
+        <h1>输入商品名，<br>价格<span class="mark">自己回来</span>。</h1>
+        <p class="lede">淘宝、京东、拼多多三家搜索页一次抓取，结果汇总成一张表。第一次登录一次，Cookie 只留在这台电脑；之后可以直接按价格、匹配度或平台排序。</p>
+
+        <form class="search auto-search" id="autoSearchForm" autocomplete="off" novalidate>
+          <span class="search-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+              <circle cx="10.5" cy="10.5" r="6.5"></circle>
+              <path d="m15.5 15.5 4.2 4.2"></path>
+            </svg>
+          </span>
+          <label class="sr-only" for="autoQuery">商品名称</label>
+          <input id="autoQuery" name="q" type="search" placeholder="输入商品名称，如：AirPods Pro 2" aria-label="商品名称" spellcheck="false">
+          <button class="search-btn" id="autoSearchBtn" type="submit">
+            <span>抓取价格</span>
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M4 10h12M11 5l5 5-5 5"></path>
+            </svg>
+          </button>
+        </form>
+
+        <div class="auto-tools">
+          <button class="button ghost" id="loginBtn" type="button">逐家登录</button>
+          <button class="button ghost" id="startBrowserBtn" type="button">打开抓取浏览器</button>
+          <span class="auto-tools-note">首次使用需要登录，首次启动约 10–20 秒；遇到验证码时在抓取 Chrome 里完成。</span>
+        </div>
+
+        <div class="recent auto-recent" id="autoRecentWrap" hidden>
+          <span class="recent-label">最近</span>
+          <div class="recent-chips" id="autoRecentChips"></div>
+        </div>
+
+        <div class="auto-warning" id="serviceWarning" hidden>
+          <strong>需要通过本地服务打开</strong>
+          <p>在项目目录运行 <code>start-auto.bat</code>（或 <code>node server.mjs</code>），然后打开 <a href="http://127.0.0.1:8787/">http://127.0.0.1:8787/</a>。</p>
+        </div>
+      </div>
+
+      <aside class="auto-console" aria-label="本地抓取器状态">
+        <div class="console-head">
+          <span>LOCAL CRAWLER / 本地抓取器</span>
+          <span class="console-light" id="consoleLight" aria-hidden="true"></span>
+        </div>
+        <div class="console-row">
+          <span>浏览器</span>
+          <strong id="consoleBrowser">未启动</strong>
+        </div>
+        <div class="console-row">
+          <span>登录态</span>
+          <strong id="consoleLogin">首次需登录</strong>
+        </div>
+        <div class="console-row">
+          <span>抓取范围</span>
+          <strong>3 家 · 每店最多 40 件</strong>
+        </div>
+        <div class="console-row">
+          <span>数据去向</span>
+          <strong>只在本机</strong>
+        </div>
+        <div class="console-log" id="consoleLog" aria-live="polite">
+          <span class="console-prompt">$</span>
+          <span>等待任务</span>
+        </div>
+        <button class="console-close" id="closeBrowserBtn" type="button">关闭抓取浏览器</button>
+      </aside>
+    </section>
+
+    <section class="login-panel" id="loginPanel" hidden aria-labelledby="loginPanelTitle">
+      <div class="login-panel-head">
+        <div>
+          <p class="eyebrow"><span>LOGIN</span>本机扫码登录</p>
+          <h2 id="loginPanelTitle">一家一家登录，扫码即可</h2>
+          <p>当前只打开一家登录页。登录完淘宝点“下一家：京东”，再登录拼多多；二维码过期就点刷新。</p>
+        </div>
+        <button class="login-close" id="loginClose" type="button" aria-label="关闭登录面板">×</button>
+      </div>
+
+      <div class="login-tabs" id="loginTabs" role="list" aria-label="登录进度"></div>
+
+      <div class="login-preview">
+        <a class="login-shot-wrap" id="loginShotLink" href="#" target="_blank" rel="noopener noreferrer" aria-label="打开登录页大图">
+          <img id="loginShot" alt="平台登录页面截图">
+          <span class="login-shot-empty" id="loginShotEmpty">登录页面还在加载，点“刷新二维码”重试。</span>
+        </a>
+        <div class="login-preview-side">
+          <p class="login-platform-hint" id="loginPlatformHint">正在显示淘宝登录页。</p>
+          <ol class="login-steps">
+            <li>用对应 App 扫描二维码</li>
+            <li>在手机上确认登录</li>
+            <li>点“下一家”继续，或“完成登录”回到比价</li>
+          </ol>
+          <div class="login-actions">
+            <button class="button ghost" id="loginPrev" type="button">上一家</button>
+            <button class="button ghost" id="refreshLoginShot" type="button">刷新二维码</button>
+            <button class="button ghost" id="qrLoginBtn" type="button">切换扫码登录</button>
+            <button class="button ghost" id="openLoginWindow" type="button">在 Chrome 中打开</button>
+            <button class="button dark" id="loginDone" type="button">登录完成，下一家</button>
+          </div>
+          <p class="login-note">点击截图可查看大图。每家登录完成后进入下一家，已登录的 Cookie 会保留；最后点“完成登录”。</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="auto-results" id="autoResults" aria-labelledby="autoResultsTitle">
+      <div class="auto-results-head">
+        <div class="section-title">
+          <span class="section-no">02</span>
+          <div>
+            <h2 id="autoResultsTitle">三家全部商品</h2>
+            <p id="resultQuery">输入商品名称，三家搜索页会并行抓取</p>
+          </div>
+        </div>
+        <span class="auto-state" id="searchState">准备就绪</span>
+      </div>
+
+      <div class="auto-grid" id="autoGrid"></div>
+
+      <div class="data-panel">
+        <div class="data-toolbar">
+          <div class="data-filters" id="platformFilters" role="group" aria-label="筛选平台">
+            <button class="data-filter is-active" type="button" data-filter="all">全部</button>
+            <button class="data-filter" type="button" data-filter="taobao">淘宝</button>
+            <button class="data-filter" type="button" data-filter="jd">京东</button>
+            <button class="data-filter" type="button" data-filter="pdd">拼多多</button>
+          </div>
+          <div class="data-tools">
+            <label class="data-sort-label" for="sortSelect">排序</label>
+            <select class="data-sort-select" id="sortSelect">
+              <option value="price-asc">价格从低到高</option>
+              <option value="price-desc">价格从高到低</option>
+              <option value="match-desc">匹配度优先</option>
+              <option value="platform">按平台</option>
+            </select>
+            <span class="data-count" id="dataCount">共 0 件</span>
+          </div>
+        </div>
+        <div class="data-table-wrap" id="dataTableWrap" aria-live="polite"></div>
+      </div>
+
+      <div class="notice auto-notice">
+        <span class="notice-icon" aria-hidden="true">i</span>
+        <p>汇总的是当前搜索结果页抓到的商品，平台分页里的更多内容不会自动翻页。价格可能受登录账号、地区、优惠券、会员和运费影响，下单前请以商品详情页与结算页为准。</p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <p>本地 Chrome 爬虫 · 不经过第三方服务器 · 抓取 Cookie 保存在 <code>.chrome-profile</code></p>
+    <p class="footer-hint"><kbd>/</kbd> 聚焦搜索 · <kbd>Ctrl</kbd><span>/</span><kbd>⌘</kbd> + <kbd>Enter</kbd> 开始抓取 · <a href="/manual">手动比价版</a></p>
+  </footer>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="auto.js"></script>
+</body>
+</html>

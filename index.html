@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <meta name="description" content="输入商品名称，逐个打开淘宝、京东、拼多多的官方搜索结果，回填到手价后自动比较最低价与差价。">
+  <title>比价台 · 一次看清三个平台</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%231c1b18'/%3E%3Ctext x='32' y='45' font-size='38' text-anchor='middle' fill='%23f4f0e7' font-family='serif'%3E比%3C/text%3E%3C/svg%3E">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="brand" href="#" aria-label="比价台首页">
+        <span class="brand-mark" aria-hidden="true">比</span>
+        <span class="brand-copy">
+          <span class="brand-name">比价台</span>
+          <span class="brand-en">PRICE DESK</span>
+        </span>
+      </a>
+      <div class="topbar-right">
+        <a class="auto-entry" href="http://127.0.0.1:8787/">自动抓价版 →</a>
+        <p class="privacy"><span class="status-dot" aria-hidden="true"></span>价格只留在本机</p>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="hero-copy">
+        <p class="eyebrow"><span>NO. 01</span>一次输入 · 三平台同查</p>
+        <h1>买之前，<br>先看清<span class="mark">价格</span>。</h1>
+        <p class="lede">输入商品名称，淘宝、京东、拼多多的官方搜索页会一次排开。把看到的价格填回来，最低价和差价自动算好。</p>
+
+        <form class="search" id="searchForm" autocomplete="off" novalidate>
+          <span class="search-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+              <circle cx="10.5" cy="10.5" r="6.5"></circle>
+              <path d="m15.5 15.5 4.2 4.2"></path>
+            </svg>
+          </span>
+          <label class="sr-only" for="queryInput">商品名称</label>
+          <input id="queryInput" name="q" type="search" placeholder="输入商品名称，如：戴森 V12" aria-label="商品名称" spellcheck="false">
+          <button class="search-btn" type="submit">
+            <span>开始比价</span>
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M4 10h12M11 5l5 5-5 5"></path>
+            </svg>
+          </button>
+        </form>
+
+        <div class="search-foot">
+          <div class="recent" id="recentWrap" hidden>
+            <span class="recent-label">最近</span>
+            <div class="recent-chips" id="recentChips"></div>
+          </div>
+          <p class="shortcut"><kbd>Ctrl</kbd><span>+</span><kbd>Enter</kbd> 打开下一个平台</p>
+        </div>
+      </div>
+
+      <aside class="receipt-wrap" aria-hidden="true">
+        <span class="tape"></span>
+        <div class="receipt">
+          <div class="receipt-top"><span>PRICE CHECK</span><span>NO. 001</span></div>
+          <div class="receipt-title">AirPods Pro 2</div>
+          <div class="receipt-sub">三平台比价 · 示例单据</div>
+          <div class="receipt-rule"></div>
+          <div class="receipt-row"><span><i class="swatch" style="--c:#ff5000"></i>淘宝</span><span>¥ 899</span></div>
+          <div class="receipt-row best"><span><i class="swatch" style="--c:#e1251b"></i>京东<em>最低</em></span><span>¥ 799</span></div>
+          <div class="receipt-row"><span><i class="swatch" style="--c:#e02e24"></i>拼多多</span><span>¥ 820</span></div>
+          <div class="receipt-rule dashed"></div>
+          <div class="receipt-total"><span>最多可省</span><strong>¥ 100</strong></div>
+          <div class="receipt-barcode"></div>
+          <div class="receipt-foot">KEEP THE BEST PRICE</div>
+        </div>
+      </aside>
+    </section>
+
+    <section class="workspace" id="workspace" aria-labelledby="workspaceTitle">
+      <div class="section-head">
+        <div class="section-title">
+          <span class="section-no">02</span>
+          <div>
+            <h2 id="workspaceTitle">逐店看价</h2>
+            <p id="queryLine">输入商品名称，搜索入口会出现在这里</p>
+          </div>
+        </div>
+        <div class="head-actions">
+          <button class="button ghost" id="clearBtn" type="button">清空价格</button>
+          <button class="button dark" id="openAllBtn" type="button" title="浏览器每次只允许打开一个新标签，三个平台会按顺序打开">
+            <span id="openNextLabel">逐个打开</span>
+            <span class="btn-count" id="openProgress">0/3</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="platform-grid" id="platformGrid"></div>
+
+      <div class="notice">
+        <span class="notice-icon" aria-hidden="true">i</span>
+        <p>页面会跳转到各平台的官方搜索结果，不会代填账号信息。实际到手价受优惠券、地区、会员与运费影响，请以结算页为准。</p>
+      </div>
+    </section>
+
+    <section class="compare-grid" id="compare">
+      <article class="panel result-panel" aria-labelledby="resultTitle">
+        <div class="panel-head">
+          <div class="section-title">
+            <span class="section-no">03</span>
+            <h2 id="resultTitle">价格对照</h2>
+          </div>
+          <span class="live-pill"><i aria-hidden="true"></i>自动更新</span>
+        </div>
+
+        <div id="resultBody" aria-live="polite"></div>
+
+        <div class="panel-actions">
+          <button class="button dark small" id="saveBtn" type="button" disabled>保存本次</button>
+          <button class="button ghost small" id="copyBtn" type="button" disabled>复制结果</button>
+        </div>
+      </article>
+
+      <article class="panel history-panel" aria-labelledby="historyTitle">
+        <div class="panel-head">
+          <div class="section-title">
+            <span class="section-no">04</span>
+            <h2 id="historyTitle">比价记录</h2>
+          </div>
+          <button class="text-btn muted" id="clearHistoryBtn" type="button">清空</button>
+        </div>
+        <div id="historyList"></div>
+        <div class="history-foot">
+          <span>最多保留 12 条</span>
+          <span>仅存本机</span>
+        </div>
+      </article>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <p>比价台 · 不抓取账号数据，不接入第三方接口，记录保存在浏览器本地。</p>
+    <p class="footer-hint"><kbd>/</kbd> 聚焦搜索 · <kbd>Ctrl</kbd><span>/</span><kbd>⌘</kbd> + <kbd>Enter</kbd> 打开下一个平台</p>
+  </footer>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="app.js"></script>
+</body>
+</html>
