@@ -426,7 +426,7 @@
         <div class="save-line">${savingCopy}</div>
       </div>
       <ol class="rank-list">${rows}</ol>
-      <p class="result-note">已填写 ${entries.length}/4 个平台 · ${difference > 0 ? `最高与最低相差 <strong>¥${money(difference)}</strong>` : "暂未发现价差"}</p>
+      <p class="result-note">已填写 ${entries.length}/${PLATFORMS.length} 个平台 · ${difference > 0 ? `最高与最低相差 <strong>¥${money(difference)}</strong>` : "暂未发现价差"}</p>
     `;
   }
 

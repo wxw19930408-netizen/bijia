@@ -6,7 +6,7 @@
   <meta name="color-scheme" content="light">
   <meta name="description" content="用本机 Chrome 自动抓取淘宝、京东、拼多多的商品搜索结果与价格，输入商品名称即可比较三家价格。">
   <title>比价台 · 自动抓价</title>
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%231c1b18'/%3E%3Ctext x='32' y='45' font-size='38' text-anchor='middle' fill='%23f4f0e7' font-family='serif'%3E比%3C/text%3E%3C/svg%3E">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='4' fill='%23008254'/%3E%3Ctext x='32' y='45' font-size='38' text-anchor='middle' fill='%23e8fdac' font-family='sans-serif' font-weight='700'%3E比%3C/text%3E%3C/svg%3E">
   <link rel="stylesheet" href="styles.css">
   <link rel="stylesheet" href="auto.css">
 </head>
@@ -28,7 +28,7 @@
   </header>
 
   <main class="auto-main">
-    <section class="auto-hero">
+    <section class="hero auto-hero">
       <div class="auto-hero-copy">
         <p class="eyebrow"><span>AUTO 01</span>本地 Chrome · 三家同查</p>
         <h1>输入商品名，<br>价格<span class="mark">自己回来</span>。</h1>
@@ -56,6 +56,12 @@
           <button class="button ghost" id="startBrowserBtn" type="button">打开抓取浏览器</button>
           <span class="auto-tools-note">首次使用需要登录，首次启动约 10–20 秒；遇到验证码时在抓取 Chrome 里完成。</span>
         </div>
+
+        <ul class="hero-trust" aria-label="产品特点">
+          <li><span>三家搜索页并行抓取</span></li>
+          <li><span>Cookie 只留在本机</span></li>
+          <li><span>结果按价格排序</span></li>
+        </ul>
 
         <div class="recent auto-recent" id="autoRecentWrap" hidden>
           <span class="recent-label">最近</span>
